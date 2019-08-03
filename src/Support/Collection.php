@@ -51,7 +51,6 @@ class Collection
     /**
      * Undocumented function
      *
-     * @param  array $items
      * @return array|\Illuminate\Support\Collection
      */
     public function mapInto(string $model)

@@ -3,8 +3,8 @@
 namespace StephaneCoinon\SendGridActivity\Integrations\Laravel;
 
 use Illuminate\Support\ServiceProvider;
-use StephaneCoinon\SendGridActivity\SendGrid;
 use StephaneCoinon\SendGridActivity\Integrations\Framework;
+use StephaneCoinon\SendGridActivity\SendGrid;
 
 class SendGridApiServiceProvider extends ServiceProvider
 {
