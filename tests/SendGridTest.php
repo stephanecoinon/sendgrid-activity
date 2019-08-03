@@ -2,6 +2,7 @@
 
 namespace StephaneCoinon\SendGridActivity\Tests;
 
+use Http\Mock\Client as MockClient;
 use StephaneCoinon\SendGridActivity\Requests\Request;
 use StephaneCoinon\SendGridActivity\Responses\Response;
 use StephaneCoinon\SendGridActivity\SendGrid;
@@ -10,31 +11,48 @@ use StephaneCoinon\SendGridActivity\Tests\Support\Factories\ApiResponseFactory;
 class SendGridTest extends TestCase
 {
     /** @test */
-    function it_can_make_a_request_from_a_request_instance()
+    function return_json_response_as_an_array()
     {
-        $sendgrid = SendGrid::mock([
-            (new ApiResponseFactory)->build([
-                'items' => [
-                    new SendGridResponseStub,
-                    new SendGridResponseStub,
-                    new SendGridResponseStub,
-                ]
-            ])
+        $api = $this->mockApiResponse(
+            $item = ['id' => 1, 'email' => 'john@example.com']
+        );
+
+        $response = $api->requestRaw('GET', '/some-endpoint');
+
+        $this->assertEquals($item, $response);
+    }
+
+    /** @test */
+    function making_a_request_from_a_request_instance_returns_response_instances()
+    {
+        $api = $this->mockApiResponse([
+            'items' => [['id' => 1], ['id' => 2], ['id' => 3]]
         ]);
 
-        $items = $sendgrid->request(new SendGridRequestStub);
+        $responses = $api->request(new RequestStub);
 
-        $this->assertCount(3, $items);
-        $this->assertContainsOnlyInstancesOf(SendGridResponseStub::class, $items);
+        $this->assertCount(3, $responses);
+        $this->assertContainsOnlyInstancesOf(ResponseStub::class, $responses);
+        $this->assertEquals([1, 2, 3], array_map(function ($response) {
+            return $response->id;
+        }, $responses));
+    }
+
+    function mockApiResponse(array $response): SendGrid
+    {
+        $client = new MockClient;
+        $client->addResponse((new ApiResponseFactory)->json()->build($response));
+
+        return SendGrid::newWithClient($client);
     }
 }
 
-class SendGridRequestStub extends Request
+class RequestStub extends Request
 {
-    protected $response = SendGridResponseStub::class;
+    protected $response = ResponseStub::class;
 }
 
-class SendGridResponseStub extends Response
+class ResponseStub extends Response
 {
     protected $dataKey = 'items';
 }

@@ -2,8 +2,11 @@
 
 namespace StephaneCoinon\SendGridActivity;
 
-use Http\Mock\Client as MockClient;
-use StephaneCoinon\SendGridActivity\ApiClient;
+use Http\Client\Common\Plugin\BaseUriPlugin;
+use Http\Client\HttpClient;
+use Http\Discovery\MessageFactoryDiscovery;
+use Http\Discovery\UriFactoryDiscovery;
+use StephaneCoinon\SendGridActivity\HttpClientFactory;
 use StephaneCoinon\SendGridActivity\Requests\Request;
 
 /**
@@ -12,49 +15,109 @@ use StephaneCoinon\SendGridActivity\Requests\Request;
 class SendGrid
 {
     /**
+     * API base URL.
+     *
+     * @var string
+     */
+    protected $apiUrl = 'https://api.sendgrid.com';
+
+    /**
+     * API version.
+     *
+     * @var string
+     */
+    protected $apiVersion = 'v3';
+
+    /**
      * Underlying HTTP client.
      *
-     * @var \StephaneCoinon\SendGridActivity\ApiClient
+     * @var \Http\Client\HttpClient
      */
-    protected $api;
+    protected $client;
 
     /**
-     * Get a new SendGrid instance.
+     * Message factory.
      *
-     * If $api is null, a new ApiClient instance will be used instead.
-     *
-     * @param null|ApiClient $api
+     * @var \Http\Message\MessageFactory
      */
-    public function __construct(ApiClient $api = null)
+    protected $messageFactory;
+
+    /**
+     * Make a new ApiClient instance.
+     *
+     * If $client is null, a new HttpClient using $apiKey is instantiated.
+     * If $apiKey is null, SENDGRID_API_KEY environment variable is used.
+     * $apiKey is not used when $client is specified.
+     *
+     * @param null|string $apiKey
+     * @param null|\Http\Client\HttpClient $client
+     */
+    public function __construct($apiKey = null, HttpClient $client = null)
     {
-        $this->api = $api ?? new ApiClient;
+        $this->messageFactory = MessageFactoryDiscovery::find();
+        $this->client = $client ?? HttpClientFactory::create(
+            $apiKey ?? getenv('SENDGRID_API_KEY'),
+            [
+                new BaseUriPlugin(
+                    UriFactoryDiscovery::find()->createUri($this->apiUrl)
+                )
+            ]
+        );
     }
 
     /**
-     * Mock the SendGrid API.
+     * Static constructor to get a ApiClient instance with a given HTTP client.
      *
-     * @param  array $responses
+     * @param  \Http\Client\HttpClient $client
      * @return self
      */
-    public static function mock(array $responses = []): self
+    public static function newWithClient(HttpClient $client)
     {
-        $client = new MockClient;
-
-        foreach ($responses as $response) {
-            $client->addResponse($response);
-        }
-
-        return new static(ApiClient::newWithClient($client));
+        return new static(null, $client);
     }
 
     /**
-     * Make an HTTP request.
+     * Make a "raw" HTTP request.
+     *
+     * JSON responses are automatically decoded to an array.
+     *
+     * @param  string $method HTTP method
+     * @param  string $url
+     * @return array|string
+     */
+    public function requestRaw(string $method, string $url = '')
+    {
+        $response = $this->client->sendRequest(
+            $this->messageFactory->createRequest(
+                $method, "{$this->apiVersion}/{$url}"
+            )
+        );
+
+        if ($response->getStatusCode() != 200) {
+            var_dump(['request failed' => $response->getBody()->getContents()]); die();
+            // throw new \Exception('Request failed');
+        }
+
+        $content = $response->getBody()->getContents();
+        $contentType = $response->getHeader('Content-Type');
+        $isJson = in_array('application/json', $contentType);
+
+        return $isJson ? json_decode($content, true) : $content;
+    }
+
+    /**
+     * Make a request using a Request instance.
      *
      * @param  Request $request
      * @return Response|Response[]
      */
     public function request(Request $request)
     {
-        return $this->api->makeRequest($request);
+        $responseModel = $request->getResponseModel();
+        $response = $this->requestRaw(
+            $request->getMethod(), $request->buildUrl()
+        );
+
+        return $responseModel::createFromApiResponse($response);
     }
 }
