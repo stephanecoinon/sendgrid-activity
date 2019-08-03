@@ -15,13 +15,41 @@ You can install the package via composer:
 composer require stephanecoinon/sendgrid-activity
 ```
 
+This package is agnostic but also can integrate with Laravel (tested on 5.8 but should work >=5.5).
+
+Just add your SendGrid API key in `.env`:
+
+```
+SENDGRID_API_KEY=your_API_key_here
+```
+
+Then update `config/services.php` and you're good to go:
+
+```php
+return [
+
+    // ...
+
+    'sendgrid' => [
+        'key' => env('SENDGRID_API_KEY'),
+    ],
+
+];
+```
+
 ## Usage
 
 ``` php
 use StephaneCoinon\SendGridActivity\Requests\MessagesRequest;
 use StephaneCoinon\SendGridActivity\SendGrid;
 
+// First, get SendGrid API client instance
+// In vanilla PHP
 $api = new SendGrid('your API key here');
+// Or in Laravel
+$api = app(SendGrid::class);
+
+// Fetch the message activity
 $messages = $api->request(
     (new MessagesRequest)
         ->limit(50)

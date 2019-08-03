@@ -77,6 +77,16 @@ class SendGrid
     }
 
     /**
+     * Get underlying HTTP client.
+     *
+     * @return \Http\Client\HttpClient
+     */
+    public function getClient(): HttpClient
+    {
+        return $this->client;
+    }
+
+    /**
      * Make a "raw" HTTP request.
      *
      * JSON responses are automatically decoded to an array.

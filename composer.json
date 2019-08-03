@@ -22,6 +22,7 @@
     },
     "require-dev": {
         "fzaninotto/faker": "^1.8",
+        "orchestra/testbench": "^3.8",
         "php-http/mock-client": "^1.3",
         "phpunit/phpunit": "^7.0",
         "symfony/var-dumper": "^4.3",
@@ -35,11 +36,14 @@
     "autoload-dev": {
         "psr-4": {
             "StephaneCoinon\\SendGridActivity\\Tests\\": "tests"
-        },
-        "files": [
-            "tests/Support/helpers.php",
-            "tests/Support/factories.php"
-        ]
+        }
+    },
+    "extra": {
+        "laravel": {
+            "providers": [
+                "StephaneCoinon\\SendGridActivity\\Integrations\\Laravel\\SendGridApiServiceProvider"
+            ]
+        }
     },
     "scripts": {
         "test": "vendor/bin/phpunit",

@@ -2,9 +2,8 @@
 
 use Faker\Generator as Faker;
 use StephaneCoinon\SendGridActivity\Responses\Message;
-use StephaneCoinon\SendGridActivity\Tests\Support\Factories\Factory;
 
-Factory::define(Message::class, function (Faker $faker) {
+$factory->define(Message::class, function (Faker $faker) {
     return [
         'from_email' => $faker->safeEmail,
         'msg_id' => 'h2WRhxX2Rl22Dg2nqoI_LQ.filter0097p3iad2-15416-5D42C6A6-72.0',
