@@ -3,6 +3,7 @@
 namespace StephaneCoinon\SendGridActivity\Tests;
 
 use PHPUnit\Framework\TestCase as BaseTestCase;
+use StephaneCoinon\SendGridActivity\Integrations\Framework;
 
 class TestCase extends BaseTestCase
 {
@@ -10,6 +11,8 @@ class TestCase extends BaseTestCase
 
     public function setUp(): void
     {
+        Framework::php();
+
         parent::setUp();
 
         // $this->loadEnv();

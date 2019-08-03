@@ -1,41 +1,38 @@
 <?php
 
-namespace StephaneCoinon\SendGridActivity\Tests;
+namespace StephaneCoinon\SendGridActivity\Tests\Integrations;
 
 use Http\Mock\Client as MockClient;
+use Illuminate\Support\Collection;
+use StephaneCoinon\SendGridActivity\Integrations\Framework;
 use StephaneCoinon\SendGridActivity\SendGrid;
+use StephaneCoinon\SendGridActivity\Tests\LaravelTestCase;
 use StephaneCoinon\SendGridActivity\Tests\Support\Factories\ApiResponseFactory;
 use StephaneCoinon\SendGridActivity\Tests\Support\Stubs\RequestStub;
 use StephaneCoinon\SendGridActivity\Tests\Support\Stubs\ResponseStub;
 
-class SendGridTest extends TestCase
+class LaravelTest extends LaravelTestCase
 {
     /** @test */
-    function return_json_response_as_an_array()
+    function laravel_framework_is_detected()
     {
-        $api = $this->mockApiResponse(
-            $item = ['id' => 1, 'email' => 'john@example.com']
-        );
-
-        $response = $api->requestRaw('GET', '/some-endpoint');
-
-        $this->assertEquals($item, $response);
+        $this->assertTrue(Framework::isLaravel());
     }
 
     /** @test */
-    function making_a_request_from_a_request_instance_returns_response_instances()
+    function request_returns_a_collection_instead_of_an_array_in_laravel()
     {
+        $this->assertTrue(Framework::isLaravel());
         $api = $this->mockApiResponse([
             'items' => [['id' => 1], ['id' => 2], ['id' => 3]]
         ]);
 
         $responses = $api->request(new RequestStub);
 
+        $this->assertInstanceOf(Collection::class, $responses);
         $this->assertCount(3, $responses);
         $this->assertContainsOnlyInstancesOf(ResponseStub::class, $responses);
-        $this->assertEquals([1, 2, 3], array_map(function ($response) {
-            return $response->id;
-        }, $responses));
+        $this->assertEquals([1, 2, 3], $responses->pluck('id')->all());
     }
 
     function mockApiResponse(array $response): SendGrid
@@ -43,6 +40,6 @@ class SendGridTest extends TestCase
         $client = new MockClient;
         $client->addResponse((new ApiResponseFactory)->json()->build($response));
 
-        return SendGrid::newWithClient($client);
+        return app(SendGrid::class)->withClient($client);
     }
 }

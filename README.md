@@ -55,6 +55,7 @@ $messages = $api->request(
         ->limit(50)
         ->query('status="delivered"')
 );
+// Note: $messages will be a \Illuminate\Support\Collection when in a Laravel app
 ```
 
 ### Testing

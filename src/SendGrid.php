@@ -8,6 +8,7 @@ use Http\Discovery\MessageFactoryDiscovery;
 use Http\Discovery\UriFactoryDiscovery;
 use StephaneCoinon\SendGridActivity\HttpClientFactory;
 use StephaneCoinon\SendGridActivity\Requests\Request;
+use StephaneCoinon\SendGridActivity\Support\Collection;
 
 /**
  * SendGrid API client.
@@ -77,6 +78,19 @@ class SendGrid
     }
 
     /**
+     * Set the underlying HTTP client.
+     *
+     * @param  \Http\Client\HttpClient $client
+     * @return self
+     */
+    public function withClient(HttpClient $client): self
+    {
+        $this->client = $client;
+
+        return $this;
+    }
+
+    /**
      * Get underlying HTTP client.
      *
      * @return \Http\Client\HttpClient
@@ -93,7 +107,7 @@ class SendGrid
      *
      * @param  string $method HTTP method
      * @param  string $url
-     * @return array|string
+     * @return string|array|\Illuminate\Support\Collection
      */
     public function requestRaw(string $method, string $url = '')
     {
@@ -112,7 +126,7 @@ class SendGrid
         $contentType = $response->getHeader('Content-Type');
         $isJson = in_array('application/json', $contentType);
 
-        return $isJson ? json_decode($content, true) : $content;
+        return $isJson ? Collection::collect(json_decode($content, true)) : $content;
     }
 
     /**

@@ -3,6 +3,7 @@
 namespace StephaneCoinon\SendGridActivity\Responses;
 
 use Carbon\Carbon;
+use StephaneCoinon\SendGridActivity\Support\Collection;
 
 /**
  * Data model for API response results.
@@ -39,13 +40,11 @@ class Response
      * Build a collection of Response models from an array.
      *
      * @param  mixed $items raw array of results from API response
-     * @return static[]
+     * @return static[]|Collection
      */
-    public static function collection(array $items = []): array
+    public static function collection($items = [])
     {
-        return array_map(function ($item) {
-            return new static($item);
-        }, $items);
+        return Collection::make($items)->mapInto(static::class);
     }
 
     /**
