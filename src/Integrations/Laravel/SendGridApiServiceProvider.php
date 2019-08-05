@@ -2,6 +2,7 @@
 
 namespace StephaneCoinon\SendGridActivity\Integrations\Laravel;
 
+use Illuminate\Database\Eloquent\Factory;
 use Illuminate\Support\ServiceProvider;
 use StephaneCoinon\SendGridActivity\Integrations\Framework;
 use StephaneCoinon\SendGridActivity\SendGrid;
@@ -16,6 +17,7 @@ class SendGridApiServiceProvider extends ServiceProvider
     public function boot()
     {
         Framework::laravel();
+        app(Factory::class)->load(__DIR__ . '/factories');
     }
 
     /**

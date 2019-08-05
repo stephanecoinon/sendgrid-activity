@@ -13,8 +13,6 @@ class LaravelTestCase extends \Orchestra\Testbench\TestCase
         // $this->loadEnv();
 
         parent::setUp();
-
-        $this->withFactories(__DIR__.'/Support/factories.php');
     }
 
     protected function getPackageProviders($app)
