@@ -32,6 +32,13 @@ class Response
     protected $dataKey = '';
 
     /**
+     * API client.
+     *
+     * @var \StephaneCoinon\SendGridActivity\SendGrid
+     */
+    protected $api = null;
+
+    /**
      * Make a new Response instance.
      *
      * @param array $attributes
@@ -157,7 +164,7 @@ class Response
      *
      * @return self
      */
-    public function fresh(): self
+    public function fresh()
     {
         return $this->api->request($this->request::find($this->getKey()));
     }
