@@ -6,8 +6,8 @@ use Http\Mock\Client as MockClient;
 use Illuminate\Support\Collection;
 use StephaneCoinon\SendGridActivity\Integrations\Framework;
 use StephaneCoinon\SendGridActivity\SendGrid;
+use StephaneCoinon\SendGridActivity\Support\Testing\ApiResponseFactory;
 use StephaneCoinon\SendGridActivity\Tests\LaravelTestCase;
-use StephaneCoinon\SendGridActivity\Tests\Support\Factories\ApiResponseFactory;
 use StephaneCoinon\SendGridActivity\Tests\Support\Stubs\RequestStub;
 use StephaneCoinon\SendGridActivity\Tests\Support\Stubs\ResponseStub;
 

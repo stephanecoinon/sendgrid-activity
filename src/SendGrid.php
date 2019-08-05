@@ -7,8 +7,9 @@ use Http\Client\HttpClient;
 use Http\Discovery\MessageFactoryDiscovery;
 use Http\Discovery\UriFactoryDiscovery;
 use StephaneCoinon\SendGridActivity\HttpClientFactory;
+use StephaneCoinon\SendGridActivity\Integrations\Framework;
 use StephaneCoinon\SendGridActivity\Requests\Request;
-use StephaneCoinon\SendGridActivity\Support\Collection;
+use StephaneCoinon\SendGridActivity\Support\Testing\ApiResponseFactory;
 
 /**
  * SendGrid API client.
@@ -67,14 +68,49 @@ class SendGrid
     }
 
     /**
+     *
+     * @return self
+     */
+
+    /**
+     * Get a new SendGrid instance.
+     *
+     * @param null|string $apiKey
+     * @param null|\Http\Client\HttpClient $client
+     * @return self
+     */
+    public static function newInstance($apiKey = null, HttpClient $client = null): self
+    {
+        return Framework::isLaravel()
+            ? app(static::class)
+            : new static($apiKey, $client);
+    }
+
+    /**
      * Static constructor to get a ApiClient instance with a given HTTP client.
      *
      * @param  \Http\Client\HttpClient $client
      * @return self
      */
-    public static function newWithClient(HttpClient $client)
+    public static function newWithClient(HttpClient $client): self
     {
-        return new static(null, $client);
+        return static::newInstance()->withClient($client);
+    }
+
+    /**
+     * Get a new SendGrid instance with a mock client pre-loaded with HTTP responses.
+     *
+     * @param  array $responses
+     * @return self
+     */
+    public static function mock(array $responses): self
+    {
+        $client = new \Http\Mock\Client;
+        foreach ($responses as $response) {
+            $client->addResponse((new ApiResponseFactory)->json()->build($response));
+        }
+
+        return static::newWithClient($client);
     }
 
     /**

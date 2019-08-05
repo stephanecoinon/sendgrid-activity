@@ -1,9 +1,8 @@
 <?php
 
-namespace StephaneCoinon\SendGridActivity\Tests\Support\Factories;
+namespace StephaneCoinon\SendGridActivity\Support\Testing;
 
 use Http\Message\MessageFactory\GuzzleMessageFactory;
-use StephaneCoinon\SendGridActivity\Responses\Message;
 
 class ApiResponseFactory
 {
