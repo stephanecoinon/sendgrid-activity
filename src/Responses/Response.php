@@ -11,6 +11,13 @@ use StephaneCoinon\SendGridActivity\Support\Collection;
 class Response
 {
     /**
+     * Name of the key containing the unique resource id.
+     *
+     * @var string
+     */
+    protected $key = 'id';
+
+    /**
      * Attributes to cast to a native type.
      *
      * @var array
@@ -29,22 +36,83 @@ class Response
      *
      * @param array $attributes
      */
-    public function __construct($attributes = [])
+    public function __construct(array $attributes = [])
     {
-        foreach ($attributes as $key => $value) {
-            $this->$key = $this->castAttribute($key, $value);
-        }
+        $this->fill($attributes);
     }
 
     /**
      * Build a collection of Response models from an array.
      *
-     * @param  mixed $items raw array of results from API response
+     * @param  array $items raw array of results from API response
+     * @param  array $apiContext
      * @return static[]|Collection
      */
-    public static function collection($items = [])
+    public static function collection(array $items = [], array $apiContext = [])
     {
-        return Collection::make($items)->mapInto(static::class);
+        return Collection::make($items)->map(function ($item) use ($apiContext) {
+            return (new static($item))->fill($apiContext);
+        });
+    }
+
+    /**
+     * Fill the response with an array of attributes.
+     *
+     * @param  array $attributes
+     * @return self
+     */
+    public function fill(array $attributes = []): self
+    {
+        foreach ($attributes as $key => $value) {
+            $this->setAttribute($key, $value);
+        }
+
+        return $this;
+    }
+
+    /**
+     * Get the value of an attribute.
+     *
+     * @param  string $name
+     * @return mixed
+     */
+    public function getAttribute(string $name)
+    {
+        return $this->$name ?? null;
+    }
+
+    /**
+     * Set the value of an attribute.
+     *
+     * @param  string $name
+     * @param  mixed $value
+     * @return self
+     */
+    public function setAttribute(string $name, $value): self
+    {
+        $this->$name = $this->castAttribute($name, $value);
+
+        return $this;
+    }
+
+    /**
+     * Get the name of the resource unique identifier key.
+     *
+     * @return string
+     */
+    public function getKeyName()
+    {
+        return $this->key;
+    }
+
+    /**
+     * Get the value of the resource unique identifer.
+     *
+     * @return mixed
+     */
+    public function getKey()
+    {
+        return $this->getAttribute($this->getKeyName());
     }
 
     /**
@@ -70,16 +138,27 @@ class Response
      * Cast a JSON-decoded API response to Response instance(s)
      *
      * @param  array $apiResponse
+     * @param  array $apiContext
      * @return static|static[]
      */
-    public static function createFromApiResponse($apiResponse)
+    public static function createFromApiResponse($apiResponse, array $apiContext = [])
     {
         $dataKey = (new static)->dataKey;
 
         return isset($apiResponse[$dataKey])
             // Collection of items nested under the data key
-            ? static::collection($apiResponse[$dataKey])
+            ? static::collection($apiResponse[$dataKey], $apiContext)
             // Single item
-            : new static($apiResponse);
+            : (new static($apiResponse))->fill($apiContext);
+    }
+
+    /**
+     * Fetch a fresh resource.
+     *
+     * @return self
+     */
+    public function fresh(): self
+    {
+        return $this->api->request($this->request::find($this->getKey()));
     }
 }

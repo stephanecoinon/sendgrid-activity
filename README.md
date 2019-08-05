@@ -56,6 +56,9 @@ $messages = $api->request(
         ->query('status="delivered"')
 );
 // Note: $messages will be a \Illuminate\Support\Collection when in a Laravel app
+
+// Find a message by id
+$message = $api->request(MessagesRequest::find('message-id'));
 ```
 
 ### Testing

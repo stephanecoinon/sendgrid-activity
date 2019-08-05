@@ -31,11 +31,32 @@ class Request
     protected $method = 'GET';
 
     /**
+     * Resource unique identifier.
+     *
+     * @var string
+     */
+    protected $key = null;
+
+    /**
      * Query string parameters.
      *
      * @var array
      */
     protected $queryStringParameters = [];
+
+    /**
+     * Builder a request to fetch a resource by unique identifier.
+     *
+     * @param  string $key
+     * @return self
+     */
+    public static function find($key): self
+    {
+        $request = new static;
+        $request->key = $key;
+
+        return $request;
+    }
 
     /**
      * Return the HTTP method used for this request.
@@ -106,6 +127,8 @@ class Request
     {
         $queryString = $this->buildQueryString();
 
-        return $this->endpoint . ($queryString ? '?' . $queryString : '');
+        return $this->endpoint
+            . ($this->key ? '/' . $this->key : '')
+            . ($queryString ? '?' . $queryString : '');
     }
 }

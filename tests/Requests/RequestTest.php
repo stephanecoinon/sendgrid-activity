@@ -2,7 +2,7 @@
 
 namespace StephaneCoinon\SendGridActivity\Tests\Requests;
 
-use StephaneCoinon\SendGridActivity\Requests\Request;
+use StephaneCoinon\SendGridActivity\Tests\Support\Stubs\RequestStub;
 use StephaneCoinon\SendGridActivity\Tests\TestCase;
 
 class RequestTest extends TestCase
@@ -19,9 +19,12 @@ class RequestTest extends TestCase
             $request->buildUrl()
         );
     }
-}
 
-class RequestStub extends Request
-{
-    protected $endpoint = 'some-endpoint';
+    /** @test */
+    function build_url_with_unique_resource_id()
+    {
+        $request = (new RequestStub)->find('some-id');
+
+        $this->assertEquals('some-endpoint/some-id', $request->buildUrl());
+    }
 }

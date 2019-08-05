@@ -38,10 +38,39 @@ class SendGridTest extends TestCase
         }, $responses));
     }
 
+    /** @test */
+    function fetching_a_fresh_resource()
+    {
+        $api = $this->mockApiResponses([
+            ['items' => [['id' => 1]]],      // GET /items
+            ['id' => 1, 'name' => 'item-1'], // GET /items/1
+        ]);
+        // First fetch, all the resources
+        $items = $api->request(new RequestStub);
+        // Pre-condition: name is not returned in first request
+        $this->assertFalse(isset($items[0]->name));
+
+        $item = $items[0]->fresh();
+
+        $this->assertInstanceOf(ResponseStub::class, $item);
+        $this->assertEquals(1, $item->id);
+        $this->assertEquals('item-1', $item->name);
+    }
+
     function mockApiResponse(array $response): SendGrid
     {
         $client = new MockClient;
         $client->addResponse((new ApiResponseFactory)->json()->build($response));
+
+        return SendGrid::newWithClient($client);
+    }
+
+    function mockApiResponses(array $responses): SendGrid
+    {
+        $client = new MockClient;
+        foreach ($responses as $response) {
+            $client->addResponse((new ApiResponseFactory)->json()->build($response));
+        }
 
         return SendGrid::newWithClient($client);
     }

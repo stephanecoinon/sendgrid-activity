@@ -49,6 +49,21 @@ class Collection
     }
 
     /**
+     * Run a map over each of the items.
+     *
+     * @param  callable $callback
+     * @return array|\Illuminate\Support\Collection
+     */
+    public function map(callable $callback)
+    {
+        if (Framework::isLaravel()) {
+            return $this->items->map($callback);
+        }
+
+        return array_map($callback, $this->items);
+    }
+
+    /**
      * Undocumented function
      *
      * @return array|\Illuminate\Support\Collection

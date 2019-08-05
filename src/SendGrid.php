@@ -103,11 +103,11 @@ class SendGrid
     /**
      * Make a "raw" HTTP request.
      *
-     * JSON responses are automatically decoded to an array.
+     * JSON responses are automatically decoded.
      *
      * @param  string $method HTTP method
      * @param  string $url
-     * @return string|array|\Illuminate\Support\Collection
+     * @return string|array
      */
     public function requestRaw(string $method, string $url = '')
     {
@@ -126,7 +126,7 @@ class SendGrid
         $contentType = $response->getHeader('Content-Type');
         $isJson = in_array('application/json', $contentType);
 
-        return $isJson ? Collection::collect(json_decode($content, true)) : $content;
+        return $isJson ? json_decode($content, true) : $content;
     }
 
     /**
@@ -142,6 +142,9 @@ class SendGrid
             $request->getMethod(), $request->buildUrl()
         );
 
-        return $responseModel::createFromApiResponse($response);
+        return $responseModel::createFromApiResponse($response, [
+            'api' => $this,
+            'request' => $request,
+        ]);
     }
 }
